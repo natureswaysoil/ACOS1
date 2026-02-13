@@ -1,45 +1,26 @@
 name: Deploy to Google Cloud Functions
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
 jobs:
   deploy:
     name: Deploy Cloud Function
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-
       - name: Deploy to Cloud Functions
         run: |
-          gcloud functions deploy amazon_ads_automation \
-            --gen2 \
-            --runtime python311 \
-            --trigger-http \
-            --entry-point amazon_ads_automation \
-            --region us-central1 \
-            --memory 512MB \
-            --timeout 300s \
-            --no-allow-unauthenticated \
-            --set-env-vars GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }},ALERT_EMAIL_TO=${{ secrets.ALERT_EMAIL_TO }},ALERT_EMAIL_FROM=${{ secrets.ALERT_EMAIL_FROM }},ALERT_SMS_TO=${{ secrets.ALERT_SMS_TO }},TWILIO_FROM=${{ secrets.TWILIO_FROM }},AMAZON_REGION=NA,BQ_DATASET=amazon_ads,BQ_TABLE=daily_performance,TARGET_ACOS=0.20,ACOS_WARN_HIGH=0.30,ACOS_WARN_LOW=0.10,YOY_GROWTH=0.37,MAX_CHANGE=0.25,REGION=us-central1
-
+          gcloud functions deploy amazon_ads_automation --gen2 --runtime python311 --trigger-http --entry-point amazon_ads_automation --region us-central1 --memory 512MB --timeout 300s --no-allow-unauthenticated --set-env-vars GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }},ALERT_EMAIL_TO=${{ secrets.ALERT_EMAIL_TO }},ALERT_EMAIL_FROM=${{ secrets.ALERT_EMAIL_FROM }},AMAZON_REGION=NA,BQ_DATASET=amazon_ads,BQ_TABLE=daily_performance,TARGET_ACOS=0.20
       - name: Verify deployment
-        run: |
-          gcloud functions describe amazon_ads_automation \
-            --region us-central1 \
-            --format="value(state)"
+        run: gcloud functions describe amazon_ads_automation --region us-central1 --format="value(state)"
